@@ -39,7 +39,26 @@
     </div>
 </div>
 
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Êtes-vous sûr de vouloir supprimer ce film ?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteButton">Supprimer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+    let movieIdToDelete = null;
     async function loadMovies() {
         const response = await fetch('/movies');
         const movies = await response.json();
@@ -58,13 +77,34 @@
                     <td>${movie.description}</td>
                     <td>
                         <a href="/update-movie-page/${movie.id}" class="btn btn-primary btn-sm me-2">Modifier</a>
-                        <button class="btn btn-danger btn-sm" onclick="deleteMovie(${movie.id})">Supprimer</button>
+                        <button class="btn btn-danger btn-sm" onclick="openDeleteModal(${movie.id})">Supprimer</button>
+
                     </td>
                 </tr>`;
         });
     }
 
+    // Ouvre la modale de confirmation et stocke l'ID du film à supprimer
+    function openDeleteModal(id) {
+        movieIdToDelete = id;
+        const modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
+        modal.show();
+    }
+
+    // Supprimer le film après confirmation
+    document.getElementById('confirmDeleteButton').addEventListener('click', async function() {
+        if (movieIdToDelete !== null) {
+            await fetch('/movies/' + movieIdToDelete, {
+                method: 'DELETE'
+            });
+            loadMovies(); // Recharge la liste après suppression
+            const modal = bootstrap.Modal.getInstance(document.getElementById('confirmDeleteModal'));
+            modal.hide(); // Cache la modale après suppression
+        }
+    });
+
     async function searchByGenre() {
+
         const genreInput = document.getElementById('search-genre').value.trim();
         if (genreInput === '') {
             loadMovies(); // Si champ vide, recharger tous les films
@@ -83,7 +123,7 @@
             }
         }
     }
-
+/*
     async function deleteMovie(id) {
         if (confirm('Êtes-vous sûr de vouloir supprimer ce film ?')) {
             await fetch('/movies/' + id, {
@@ -92,7 +132,7 @@
             loadMovies(); // Recharge après suppression
         }
     }
-
+*/
     window.onload = loadMovies;
 </script>
 
