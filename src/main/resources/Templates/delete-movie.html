@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Supprimer un Film</title>
+</head>
+<body>
+<h1>Supprimer un Film</h1>
+
+<input type="number" id="id" placeholder="ID du film à supprimer">
+<button onclick="deleteMovie()">Supprimer</button>
+
+<script>
+    async function deleteMovie() {
+        const id = document.getElementById('id').value;
+        await fetch(`/movies/${id}`, {
+            method: 'DELETE'
+        });
+
+        alert('Film supprimé avec succès!');
+        window.location.reload();
+    }
+</script>
+</body>
+</html>

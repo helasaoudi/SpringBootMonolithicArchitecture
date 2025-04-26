@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Chercher par Genre</title>
+</head>
+<body>
+<h1>Rechercher des Films par Genre</h1>
+<input type="text" id="movie-genre" placeholder="Genre">
+<button onclick="getMoviesByGenre()">Rechercher</button>
+
+<ul id="movies-list"></ul>
+
+<script>
+    async function getMoviesByGenre() {
+        const genre = document.getElementById('movie-genre').value;
+        const response = await fetch(`/movies/genre/${genre}`);
+        const movies = await response.json();
+
+        const list = document.getElementById('movies-list');
+        list.innerHTML = '';
+        movies.forEach(movie => {
+            list.innerHTML += `<li>${movie.title} - ${movie.releaseDate}</li>`;
+        });
+    }
+</script>
+</body>
+</html>

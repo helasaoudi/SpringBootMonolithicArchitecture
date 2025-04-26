@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Chercher un Film</title>
+</head>
+<body>
+<h1>Rechercher un Film par ID</h1>
+<input type="number" id="movie-id" placeholder="ID du film">
+<button onclick="getMovieById()">Rechercher</button>
+
+<div id="movie-result"></div>
+
+<script>
+    async function getMovieById() {
+        const id = document.getElementById('movie-id').value;
+        const response = await fetch(`/movies/${id}`);
+        const movie = await response.json();
+
+        document.getElementById('movie-result').innerHTML = `
+                <h2>${movie.title}</h2>
+                <p><strong>Genre:</strong> ${movie.genre}</p>
+                <p><strong>Description:</strong> ${movie.description}</p>
+                <p><strong>Date:</strong> ${movie.releaseDate}</p>`;
+    }
+</script>
+</body>
+</html>
