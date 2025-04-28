@@ -15,7 +15,14 @@ public class BookingController {
 
     private final BookingService bookingService;
 
-
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<BookingDto>> getBookingsByUserId(@PathVariable Long userId) {
+        List<BookingDto> bookings = bookingService.getBookingsByUserId(userId);
+        if (bookings.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(bookings);
+    }
 
     @PostMapping
     public ResponseEntity<BookingDto> book(@RequestBody BookingDto dto) {

@@ -53,6 +53,7 @@ public class MovieService {
         movie.setGenre(movieDto.getGenre());
         movie.setReleaseDate(movieDto.getReleaseDate());
         movie.setDescription(movieDto.getDescription());
+        movie.setImageUrl(movieDto.getImageUrl());
         movie updatedMovie = movieRepository.save(movie);
         return convertToDto(updatedMovie);
     }
@@ -69,6 +70,7 @@ public class MovieService {
                 .genre(movie.getGenre())
                 .releaseDate(movie.getReleaseDate())
                 .description(movie.getDescription())
+                .ImageUrl(movie.getImageUrl())
                 .build();
     }
 
@@ -80,6 +82,7 @@ public class MovieService {
                 .genre(movieDto.getGenre())
                 .releaseDate(movieDto.getReleaseDate())
                 .description(movieDto.getDescription())
+                .ImageUrl(movieDto.getImageUrl())
                 .build();
     }
 }

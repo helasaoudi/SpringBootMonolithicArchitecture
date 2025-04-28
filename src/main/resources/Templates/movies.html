@@ -2,141 +2,385 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Liste des Films</title>
-    <!-- Intégrer Bootstrap -->
+    <!-- Intégrer Bootstrap + Font Awesome pour les icônes -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .movie-card {
+            transition: transform 0.2s;
+        }
+        .movie-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .notification-badge {
+            font-size: 0.6rem;
+        }
+        .search-container {
+            max-width: 400px;
+        }
+        .table th {
+            white-space: nowrap;
+        }
+        .description-cell {
+            max-width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+    </style>
 </head>
-<body class="bg-light">
+<body>
 
-<div class="container mt-5">
-    <h1 class="text-center mb-4">🎬 Liste des Films</h1>
-
-
-    <!-- Bouton et barre de recherche -->
-    <div class="d-flex justify-content-between mb-3">
-        <a href="/add-movie-page" class="btn btn-success">Ajouter un Film</a>
-
-        <div class="d-flex">
-            <input id="search-genre" type="text" class="form-control me-2" placeholder="Rechercher par genre...">
-            <button class="btn btn-outline-primary" onclick="searchByGenre()">Rechercher</button>
+<div class="container py-4">
+    <!-- En-tête avec titre et boutons -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="m-0">
+            <i class="fas fa-film text-primary me-2"></i>Gestion des Films
+        </h1>
+        <div>
+            <a href="/add-movie-page" class="btn btn-success me-2">
+                <i class="fas fa-plus-circle me-1"></i> Ajouter
+            </a>
+            <button class="btn btn-warning position-relative" onclick="openNotificationsModal()">
+                <i class="fas fa-bell me-1"></i>
+                <span id="notification-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger notification-badge d-none">
+                    0
+                </span>
+            </button>
         </div>
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover align-middle bg-white">
-            <thead class="table-dark">
-            <tr>
-                <th>Titre</th>
-                <th>Genre</th>
-                <th>Date de sortie</th>
-                <th>Description</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody id="movies-table">
-            <!-- Rempli dynamiquement par JS -->
-            </tbody>
-        </table>
+    <!-- Barre de recherche et filtres -->
+    <div class="card mb-4 border-0 shadow-sm">
+        <div class="card-body p-3">
+            <div class="row g-3 align-items-center">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input id="search-genre" type="text" class="form-control" placeholder="Rechercher par genre...">
+                        <button class="btn btn-primary" type="button" onclick="searchByGenre()">
+                            <i class="fas fa-search me-1"></i> Rechercher
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <small class="text-muted" id="movie-count">Chargement...</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table des films -->
+    <div class="card border-0 shadow">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th width="20%">Titre</th>
+                    <th width="15%">Genre</th>
+                    <th width="15%">Date de sortie</th>
+                    <th width="35%">Description</th>
+                    <th width="15%" class="text-end">Actions</th>
+                </tr>
+                </thead>
+                <tbody id="movies-table" class="border-top-0">
+                <!-- Rempli dynamiquement par JS -->
+                <tr>
+                    <td colspan="5" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Chargement...</span>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
-<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+<!-- Modal de confirmation de suppression -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmer la suppression</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirmer la suppression
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
             </div>
             <div class="modal-body">
-                Êtes-vous sûr de vouloir supprimer ce film ?
+                Êtes-vous sûr de vouloir supprimer ce film ? Cette action est irréversible.
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteButton">Supprimer</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> Annuler
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteButton">
+                    <i class="fas fa-trash-alt me-1"></i> Supprimer
+                </button>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Modal Notifications -->
+<div class="modal fade" id="notificationsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title">
+                    <i class="fas fa-bell me-2"></i>Notifications
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body p-0" id="notifications-body">
+                <!-- Notifications chargées dynamiquement -->
+                <div class="text-center py-4">
+                    <div class="spinner-border text-warning" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i> Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JS Principal -->
 <script>
     let movieIdToDelete = null;
+    const userId = 7; // <-- Remplacer par l'ID utilisateur connecté
+
     async function loadMovies() {
-        const response = await fetch('/movies');
-        const movies = await response.json();
-        displayMovies(movies);
+        try {
+            const response = await fetch('/movies');
+            const movies = await response.json();
+            displayMovies(movies);
+            updateMovieCount(movies.length);
+        } catch (error) {
+            console.error("Erreur lors du chargement des films:", error);
+            document.getElementById('movies-table').innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center text-danger py-4">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Erreur lors du chargement des films
+                    </td>
+                </tr>`;
+        }
     }
 
     function displayMovies(movies) {
         const table = document.getElementById('movies-table');
-        table.innerHTML = '';
-        movies.forEach(movie => {
-            table.innerHTML += `
-                <tr>
-                    <td>${movie.title}</td>
-                    <td>${movie.genre}</td>
-                    <td>${movie.releaseDate}</td>
-                    <td>${movie.description}</td>
-                    <td>
-                        <a href="/update-movie-page/${movie.id}" class="btn btn-primary btn-sm me-2">Modifier</a>
-                        <button class="btn btn-danger btn-sm" onclick="openDeleteModal(${movie.id})">Supprimer</button>
 
+        if (movies.length === 0) {
+            table.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">
+                        <i class="fas fa-film me-2"></i>
+                        Aucun film trouvé
                     </td>
                 </tr>`;
+            return;
+        }
+
+        table.innerHTML = '';
+        movies.forEach(movie => {
+            const row = document.createElement('tr');
+            row.className = 'movie-card';
+            row.innerHTML = `
+                <td>
+                    <strong>${movie.title}</strong>
+                </td>
+                <td>
+                    <span class="badge bg-primary">${movie.genre}</span>
+                </td>
+                <td>${formatDate(movie.releaseDate)}</td>
+                <td class="description-cell" title="${movie.description}">${movie.description}</td>
+                <td class="text-end">
+                    <a href="/update-movie-page/${movie.id}" class="btn btn-sm btn-outline-primary me-2">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${movie.id})">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>`;
+            table.appendChild(row);
         });
     }
 
-    // Ouvre la modale de confirmation et stocke l'ID du film à supprimer
+    function formatDate(dateString) {
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('fr-FR');
+    }
+
+    function updateMovieCount(count) {
+        document.getElementById('movie-count').textContent =
+            `${count} film${count !== 1 ? 's' : ''} trouvé${count !== 1 ? 's' : ''}`;
+    }
+
     function openDeleteModal(id) {
         movieIdToDelete = id;
         const modal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
         modal.show();
     }
 
-    // Supprimer le film après confirmation
     document.getElementById('confirmDeleteButton').addEventListener('click', async function() {
         if (movieIdToDelete !== null) {
-            await fetch('/movies/' + movieIdToDelete, {
-                method: 'DELETE'
-            });
-            loadMovies(); // Recharge la liste après suppression
-            const modal = bootstrap.Modal.getInstance(document.getElementById('confirmDeleteModal'));
-            modal.hide(); // Cache la modale après suppression
+            try {
+                const response = await fetch('/movies/' + movieIdToDelete, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    showToast('Film supprimé avec succès', 'success');
+                    loadMovies();
+                } else {
+                    throw new Error('Erreur lors de la suppression');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                showToast('Échec de la suppression', 'danger');
+            } finally {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('confirmDeleteModal'));
+                modal.hide();
+            }
         }
     });
 
     async function searchByGenre() {
-
         const genreInput = document.getElementById('search-genre').value.trim();
         if (genreInput === '') {
-            loadMovies(); // Si champ vide, recharger tous les films
+            loadMovies();
         } else {
             try {
+                document.getElementById('movies-table').innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Chargement...</span>
+                            </div>
+                        </td>
+                    </tr>`;
+
                 const response = await fetch('/movies/genre/' + encodeURIComponent(genreInput));
-                if (response.ok) {
-                    const movies = await response.json();
-                    displayMovies(movies);
-                } else {
-                    alert("Erreur lors de la recherche !");
-                }
+                const movies = await response.json();
+                displayMovies(movies);
             } catch (error) {
                 console.error('Erreur:', error);
-                alert("Erreur lors de la recherche !");
+                showToast("Erreur lors de la recherche", 'danger');
             }
         }
     }
-/*
-    async function deleteMovie(id) {
-        if (confirm('Êtes-vous sûr de vouloir supprimer ce film ?')) {
-            await fetch('/movies/' + id, {
-                method: 'DELETE'
-            });
-            loadMovies(); // Recharge après suppression
+
+    // 🔔 Notifications
+    async function openNotificationsModal() {
+        try {
+            document.getElementById('notifications-body').innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-warning" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                </div>`;
+
+            const response = await fetch('/api/notifications/user/' + userId);
+            const notifications = await response.json();
+            displayNotifications(notifications);
+
+            const modal = new bootstrap.Modal(document.getElementById('notificationsModal'));
+            modal.show();
+        } catch (error) {
+            console.error('Erreur:', error);
+            document.getElementById('notifications-body').innerHTML = `
+                <div class="alert alert-danger m-3">
+                    Erreur lors du chargement des notifications
+                </div>`;
         }
     }
-*/
-    window.onload = loadMovies;
+
+    function displayNotifications(notifications) {
+        const body = document.getElementById('notifications-body');
+        const countBadge = document.getElementById('notification-count');
+
+        if (notifications.length === 0) {
+            body.innerHTML = `
+                <div class="text-center py-4 text-muted">
+                    <i class="fas fa-bell-slash fa-2x mb-3"></i>
+                    <p>Aucune notification disponible</p>
+                </div>`;
+            countBadge.classList.add('d-none');
+        } else {
+            body.innerHTML = '';
+            notifications.forEach(notification => {
+                const notificationElement = document.createElement('div');
+                notificationElement.className = 'border-bottom p-3';
+                notificationElement.innerHTML = `
+                    <div class="d-flex">
+                        <div class="flex-shrink-0 me-3 text-warning">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-1">${notification.title || "Notification"}</h6>
+                            <p class="mb-0 small">${notification.message || ""}</p>
+                            <small class="text-muted">${formatDate(notification.date)}</small>
+                        </div>
+                    </div>`;
+                body.appendChild(notificationElement);
+            });
+
+            countBadge.textContent = notifications.length;
+            countBadge.classList.remove('d-none');
+        }
+    }
+
+    function showToast(message, type = 'info') {
+        // Implémentez un système de toast si nécessaire
+        console.log(`[${type}] ${message}`);
+    }
+
+    // Rafraîchissement périodique des notifications
+    setInterval(updateNotificationCount, 3000); // Toutes les 30 secondes
+
+    async function updateNotificationCount() {
+        try {
+            const response = await fetch('/api/notifications/user/' + userId);
+            if (response.ok) {
+                const notifications = await response.json();
+                const countBadge = document.getElementById('notification-count');
+                if (notifications.length > 0) {
+                    countBadge.textContent = notifications.length;
+                    countBadge.classList.remove('d-none');
+                } else {
+                    countBadge.classList.add('d-none');
+                }
+            }
+        } catch (error) {
+            console.error('Erreur lors de la mise à jour des notifications:', error);
+        }
+    }
+
+    // Initialisation
+    document.addEventListener('DOMContentLoaded', function() {
+        loadMovies();
+        updateNotificationCount();
+
+        // Permettre la recherche avec la touche Entrée
+        document.getElementById('search-genre').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchByGenre();
+            }
+        });
+    });
 </script>
 
-<!-- Bootstrap JS (optionnel pour certains effets) -->
+<!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +39,13 @@ public class BookingService {
                 .collect(Collectors.toList());
     }
 
+    public List<BookingDto> getBookingsByUserId(Long userId) {
+        List<Booking> bookings = bookingRepository.findByUserId(userId);  // Utilisation de la méthode findByUserId
+        return bookings.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
     private BookingDto convertToDto(Booking booking) {
         return BookingDto.builder()
                 .id(booking.getId())
@@ -45,6 +53,8 @@ public class BookingService {
                 .userId(booking.getUser().getId())
                 .movieId(booking.getMovie().getId())
                 .cancelled(booking.isCancelled())
+                .isPaid(booking.isPaid())
+                .bookingTime(booking.getBookingTime())
                 .build();
     }
     public BookingDto book(BookingDto dto) {
@@ -60,6 +70,7 @@ public class BookingService {
                 .user(user)
                 .movie(movie)
                 .cancelled(false)
+                .isPaid(false)
                 .bookingTime(LocalDateTime.now())
                 .build();
 
@@ -70,6 +81,7 @@ public class BookingService {
                 .userId(user.getId())
                 .movieId(movie.getId())
                 .cancelled(false)
+                .isPaid(false)
                 .build();
         // Supprimer le log.info() d'ici car après le return
     }
@@ -89,5 +101,16 @@ public class BookingService {
 
         notificationRepository.save(notif);
     }
+
+    public Booking updateBooking(Long id) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        booking.setPaid(true);
+
+
+        return bookingRepository.save(booking);
+    }
+
 }
 

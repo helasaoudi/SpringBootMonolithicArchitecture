@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,7 +17,24 @@ public class BookingDto {
     private Long userId;
     private Long movieId;
     private boolean cancelled;
+    private LocalDateTime bookingTime;
+    private boolean isPaid;
 
+    public LocalDateTime getBookingTime() {
+        return bookingTime;
+    }
+
+    public void setBookingTime(LocalDateTime bookingTime) {
+        this.bookingTime = bookingTime;
+    }
+
+    public boolean isPaid() {
+        return isPaid;
+    }
+
+    public void setPaid(boolean paid) {
+        isPaid = paid;
+    }
     public Long getId() {
         return id;
     }

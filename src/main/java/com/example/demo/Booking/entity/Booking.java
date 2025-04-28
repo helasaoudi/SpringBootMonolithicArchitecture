@@ -26,6 +26,7 @@ public class Booking {
     private LocalDateTime bookingTime;
 
     private boolean cancelled;
+    private boolean isPaid;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -36,6 +37,13 @@ public class Booking {
     private movie movie;
 
 
+    public boolean isPaid() {
+        return isPaid;
+    }
+
+    public void setPaid(boolean paid) {
+        isPaid = paid;
+    }
 
     public Long getId() {
         return id;

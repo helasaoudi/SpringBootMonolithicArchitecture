@@ -25,6 +25,7 @@ public class movie {
     private String genre;
     private LocalDate releaseDate;
     private String description;
+    private String ImageUrl;
 
     public Long getId() {
         return id;
@@ -72,5 +73,13 @@ public class movie {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getImageUrl() {
+        return ImageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        ImageUrl = imageUrl;
     }
 }
